@@ -1,0 +1,23 @@
+{
+  "name": "silentflow-image-host",
+  "version": "0.1.0",
+  "description": "Upload pasted or dropped images to SilentFlow and insert public image links.",
+  "main": "main.js",
+  "private": true,
+  "license": "MIT",
+  "author": "Silent Lab",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit && node esbuild.config.mjs production",
+    "test": "vitest run",
+    "version": "node version-bump.mjs && git add manifest.json versions.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "^1.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}

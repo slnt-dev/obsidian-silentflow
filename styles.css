@@ -1,0 +1,9 @@
+.silentflow-usage {
+  margin-top: var(--size-4-3);
+  color: var(--text-muted);
+  white-space: pre-line;
+}
+
+.silentflow-error {
+  color: var(--text-error);
+}
