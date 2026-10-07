@@ -135,6 +135,41 @@ describe("editor event handling", () => {
     expect(editor.get()).toBe("New before\nOriginal\n![pasted-image](https://example.com/img.png)\nNew after");
     expect(editor.editor.replaceRange).toHaveBeenCalledOnce();
   });
+  it("puts each pasted image on its own line", async () => {
+    const { plugin, paste } = await fixture();
+    plugin.settings.apiKey = "sk_test_fake";
+    let n = 0;
+    vi.spyOn(plugin.api, "upload").mockImplementation(async () => ({ ...result, url: `https://example.com/${++n}.png` }));
+    const editor = editorFixture("Intro:\n");
+    paste(event([image("a.png"), image("b.png"), image("c.png")]), editor.editor);
+    await flush();
+    expect(editor.get()).toBe(
+      "Intro:\n![](https://example.com/1.png)\n![](https://example.com/2.png)\n![](https://example.com/3.png)"
+    );
+  });
+  it("leaves no blank line behind when a middle image fails", async () => {
+    const { plugin, paste } = await fixture();
+    plugin.settings.apiKey = "sk_test_fake";
+    let n = 0;
+    vi.spyOn(plugin.api, "upload").mockImplementation(async () => {
+      n += 1;
+      if (n === 2) throw new Error("boom");
+      return { ...result, url: `https://example.com/${n}.png` };
+    });
+    const editor = editorFixture("");
+    paste(event([image("a.png"), image("b.png"), image("c.png")]), editor.editor);
+    await flush();
+    expect(editor.get()).toBe("![](https://example.com/1.png)\n![](https://example.com/3.png)");
+  });
+  it("adds no line break for a single image", async () => {
+    const { plugin, paste } = await fixture();
+    plugin.settings.apiKey = "sk_test_fake";
+    vi.spyOn(plugin.api, "upload").mockResolvedValue(result);
+    const editor = editorFixture("x");
+    paste(event([image()]), editor.editor);
+    await flush();
+    expect(editor.get()).toBe("x![](https://example.com/img.png)");
+  });
   it("silently leaves the document alone when a successful placeholder was deleted", async () => {
     const { plugin, paste } = await fixture();
     plugin.settings.apiKey = "sk_test_fake";

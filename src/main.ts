@@ -64,17 +64,19 @@ export default class SilentFlowPlugin extends Plugin {
     }
     evt.preventDefault();
     const config = { baseUrl: this.settings.baseUrl, apiKey: this.settings.apiKey };
-    for (const file of files) {
+    for (const [index, file] of files.entries()) {
+      // Put each image on its own line so several images do not run together.
+      const separated = index > 0;
       const placeholder = createPlaceholder();
       const filename = uploadFilename(file.name, file.type);
       const alt = imageAlt(filename, this.settings.useFileNameAsAlt, pasted);
-      editor.replaceSelection(placeholder);
+      editor.replaceSelection(separated ? `\n${placeholder}` : placeholder);
       this.queue.push(async () => {
         try {
           const result = await this.api.upload(config, filename, file.type, await file.arrayBuffer());
-          this.replacePlaceholder(editor, placeholder, imageMarkdown(alt, result.url));
+          this.replacePlaceholder(editor, placeholder, imageMarkdown(alt, result.url), separated);
         } catch (error: unknown) {
-          this.replacePlaceholder(editor, placeholder, "");
+          this.replacePlaceholder(editor, placeholder, "", separated);
           new Notice(`SilentFlow: ${errorMessage(error)}`);
         }
       });
@@ -82,9 +84,12 @@ export default class SilentFlowPlugin extends Plugin {
     void this.drainQueue();
   }
 
-  private replacePlaceholder(editor: Editor, placeholder: string, replacement: string): void {
-    const range = findPlaceholderReplacement(editor.getValue(), placeholder, replacement);
+  private replacePlaceholder(editor: Editor, placeholder: string, replacement: string, separated: boolean): void {
+    const content = editor.getValue();
+    const range = findPlaceholderReplacement(content, placeholder, replacement);
     if (!range) return;
+    // A failed upload also removes the line break added before it.
+    if (separated && replacement === "" && content[range.from - 1] === "\n") range.from -= 1;
     editor.replaceRange(range.replacement, editor.offsetToPos(range.from), editor.offsetToPos(range.to));
   }
 
