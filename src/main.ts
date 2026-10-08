@@ -64,13 +64,21 @@ export default class SilentFlowPlugin extends Plugin {
     }
     evt.preventDefault();
     const config = { baseUrl: this.settings.baseUrl, apiKey: this.settings.apiKey };
+    // A drop is intercepted before Obsidian moves the cursor, so use the pointer.
+    let dropAt = pasted ? null : dropOffset(editor, evt as DragEvent);
     for (const [index, file] of files.entries()) {
       // Put each image on its own line so several images do not run together.
       const separated = index > 0;
       const placeholder = createPlaceholder();
       const filename = uploadFilename(file.name, file.type);
       const alt = imageAlt(filename, this.settings.useFileNameAsAlt, pasted);
-      editor.replaceSelection(separated ? `\n${placeholder}` : placeholder);
+      const text = separated ? `\n${placeholder}` : placeholder;
+      if (dropAt === null) {
+        editor.replaceSelection(text);
+      } else {
+        editor.replaceRange(text, editor.offsetToPos(dropAt));
+        dropAt += text.length;
+      }
       this.queue.push(async () => {
         try {
           const result = await this.api.upload(config, filename, file.type, await file.arrayBuffer());
@@ -105,5 +113,17 @@ export default class SilentFlowPlugin extends Plugin {
       this.draining = false;
       if (this.queue.length > 0) void this.drainQueue();
     }
+  }
+}
+
+/** Document offset under a drop pointer, or null when it cannot be resolved. */
+export function dropOffset(editor: Editor, event: DragEvent): number | null {
+  const cm = (editor as unknown as { cm?: { posAtCoords(coords: { x: number; y: number }, precise: false): number } }).cm;
+  if (!cm || typeof event.clientX !== "number" || typeof event.clientY !== "number") return null;
+  try {
+    const pos = cm.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+    return Number.isInteger(pos) && pos >= 0 ? pos : null;
+  } catch {
+    return null;
   }
 }

@@ -16,34 +16,37 @@ vi.mock("obsidian", () => ({
   requestUrl: mocks.request,
   Setting: class {}
 }));
-import SilentFlowPlugin from "../src/main";
+import SilentFlowPlugin, { dropOffset } from "../src/main";
 import { DEFAULT_SETTINGS } from "../src/settings";
 
-function editorFixture(initial = "") {
+function editorFixture(initial = "", dropPos?: number) {
   let value = initial;
   let cursor = initial.length;
   const editor = {
     getValue: () => value,
     replaceSelection: vi.fn((text: string) => { value = value.slice(0, cursor) + text + value.slice(cursor); cursor += text.length; }),
     offsetToPos: (offset: number) => {
-      const lines = value.slice(0, offset).split("\n");
-      return { line: lines.length - 1, ch: lines[lines.length - 1]!.length };
+      const lines = [...value].slice(0, offset).join("").split("\n");
+      return { line: lines.length - 1, ch: [...lines[lines.length - 1]!].length };
     },
-    replaceRange: vi.fn((text: string, from: { line: number; ch: number }, to: { line: number; ch: number }) => {
-      const offset = (pos: { line: number; ch: number }) => value.split("\n").slice(0, pos.line).reduce((sum, line) => sum + line.length + 1, 0) + pos.ch;
-      value = value.slice(0, offset(from)) + text + value.slice(offset(to));
+    replaceRange: vi.fn((text: string, from: { line: number; ch: number }, to?: { line: number; ch: number }) => {
+      const offset = (pos: { line: number; ch: number }) => value.split("\n").slice(0, pos.line).reduce((sum, line) => sum + [...line].length + 1, 0) + pos.ch;
+      const chars = [...value];
+      chars.splice(offset(from), (to ? offset(to) : offset(from)) - offset(from), ...text);
+      value = chars.join("");
     })
   };
+  if (dropPos !== undefined) (editor as unknown as { cm: { posAtCoords: () => number } }).cm = { posAtCoords: () => dropPos };
   return { editor: editor as unknown as Editor, get: () => value, set: (text: string) => { value = text; cursor = text.length; } };
 }
 function image(name = "image.png", type = "image/png"): File {
   return { name, type, arrayBuffer: async () => new Uint8Array([0, 255, 13, 10]).buffer } as File;
 }
-function event(files: File[], drop = false, prevented = false) {
+function event(files: File[], drop = false, prevented = false, coords?: { x: number; y: number }) {
   const evt = {
     defaultPrevented: prevented,
     preventDefault: vi.fn(function (this: { defaultPrevented: boolean }) { this.defaultPrevented = true; }),
-    ...(drop ? { dataTransfer: { files } } : { clipboardData: { files } })
+    ...(drop ? { dataTransfer: { files }, ...(coords ? { clientX: coords.x, clientY: coords.y } : {}) } : { clipboardData: { files } })
   };
   return evt;
 }
@@ -160,6 +163,30 @@ describe("editor event handling", () => {
     paste(event([image("a.png"), image("b.png"), image("c.png")]), editor.editor);
     await flush();
     expect(editor.get()).toBe("![](https://example.com/1.png)\n![](https://example.com/3.png)");
+  });
+  it("inserts a dropped image at the pointer, not the cursor", async () => {
+    const { plugin, drop } = await fixture();
+    plugin.settings.apiKey = "sk_test_fake";
+    vi.spyOn(plugin.api, "upload").mockResolvedValue(result);
+    const editor = editorFixture("Finder 拖入测试：\n\n多图粘贴测试：", 13);
+    drop(event([image("green.png")], true, false, { x: 10, y: 20 }), editor.editor);
+    await flush();
+    expect(editor.get()).toBe("Finder 拖入测试：\n![](https://example.com/img.png)\n\n多图粘贴测试：");
+  });
+  it("falls back to the cursor when a drop has no coordinates", async () => {
+    const { plugin, drop } = await fixture();
+    plugin.settings.apiKey = "sk_test_fake";
+    vi.spyOn(plugin.api, "upload").mockResolvedValue(result);
+    const editor = editorFixture("x", 0);
+    drop(event([image()], true), editor.editor);
+    await flush();
+    expect(editor.get()).toBe("x![](https://example.com/img.png)");
+  });
+  it("resolves a drop offset only from a real pointer", () => {
+    const editor = editorFixture("abc\ndef", 5).editor;
+    expect(dropOffset(editor, event([], true, false, { x: 1, y: 2 }) as never)).toBe(5);
+    expect(dropOffset(editor, event([], true) as never)).toBeNull();
+    expect(dropOffset(editorFixture("abc").editor, event([], true, false, { x: 1, y: 2 }) as never)).toBeNull();
   });
   it("adds no line break for a single image", async () => {
     const { plugin, paste } = await fixture();
