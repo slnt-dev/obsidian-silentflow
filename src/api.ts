@@ -26,7 +26,7 @@ export class SilentFlowApi {
   private async request(config: ApiConfig, path: string, multipart?: ReturnType<typeof buildMultipart>): Promise<unknown> {
     const baseUrl = normalizeBaseUrl(config.baseUrl);
     const apiKey = config.apiKey.trim();
-    if (!apiKey) throw new Error("Add your API key in the plugin settings.");
+    if (!apiKey) throw new Error("请先在插件设置里填入 API 密钥。");
     let response: RequestResponse;
     try {
       response = await this.requestFn({
@@ -50,7 +50,7 @@ export class SilentFlowApi {
     try {
       return JSON.parse(response.text) as unknown;
     } catch {
-      throw new Error("SilentFlow returned an invalid JSON response. Try again.");
+      throw new Error("SilentFlow 返回的数据无法识别，请重试。");
     }
   }
 
@@ -70,7 +70,7 @@ export class SilentFlowApi {
         !(typeof quota.percent === "string" || typeof quota.percent === "number") ||
         !validNumber(traffic.used) || !(validLimit(traffic.limit) || traffic.limit === "Unlimited") ||
         typeof traffic.reset_date !== "string") {
-      throw new Error("SilentFlow returned invalid usage data. Try again.");
+      throw new Error("SilentFlow 返回的用量数据无效，请重试。");
     }
     return result as Usage;
   }

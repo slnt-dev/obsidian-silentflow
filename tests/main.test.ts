@@ -69,7 +69,7 @@ describe("editor event handling", () => {
     const { plugin } = await fixture();
     expect(plugin.settings).toEqual(DEFAULT_SETTINGS);
     expect(plugin.registerEvent).toHaveBeenCalledTimes(2);
-    expect(plugin.addCommand).toHaveBeenCalledWith(expect.objectContaining({ id: "check-usage", name: "Check usage" }));
+    expect(plugin.addCommand).toHaveBeenCalledWith(expect.objectContaining({ id: "check-usage", name: "查看用量" }));
     const command = (plugin.addCommand as ReturnType<typeof vi.fn>).mock.calls[0]![0];
     expect(command.hotkeys).toBeUndefined();
   });
@@ -94,7 +94,7 @@ describe("editor event handling", () => {
     drop(event([image()], true), editor.editor);
     expect(first.preventDefault).not.toHaveBeenCalled();
     expect(second.preventDefault).not.toHaveBeenCalled();
-    expect(mocks.notices).toEqual(["SilentFlow: add your API key in settings to upload pasted images."]);
+    expect(mocks.notices).toEqual(["SilentFlow：请先在插件设置里填入 API 密钥，粘贴的图片才会上传。"]);
     expect(editor.get()).toBe("");
   });
   it("honors paste and drop switches independently", async () => {

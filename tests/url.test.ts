@@ -23,6 +23,6 @@ describe("validateImageUrl", () => {
     expect(validateImageUrl(url)).toBe(url);
   });
   it.each([undefined, null, 12, "/img.png", "http://cdn.example.com/img.png", "javascript:alert(1)", "data:image/png;base64,AA", "https://user:password@example.com/a.png"])("rejects invalid image URL: %s", (url) => {
-    expect(() => validateImageUrl(url)).toThrow("valid HTTPS image URL");
+    expect(() => validateImageUrl(url)).toThrow("没有返回有效的 HTTPS 图片地址");
   });
 });

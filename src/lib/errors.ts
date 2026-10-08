@@ -12,20 +12,20 @@ export function describeError(status: number | undefined, body: unknown, fallbac
   const detail = typeof parsed.detail === "string" && parsed.detail.trim()
     ? parsed.detail.trim()
     : typeof parsed.error === "string" ? parsed.error.trim() : "";
-  if (!status || status < 100) return "Could not reach SilentFlow. Check your network connection.";
-  if (status === 401) return "API key is invalid or revoked. Check it in the plugin settings.";
+  if (!status || status < 100) return "连不上 SilentFlow。请检查网络。";
+  if (status === 401) return "API 密钥无效或已被撤销。请在插件设置里检查。";
   if (status === 403 && parsed.code === "storage_quota_exceeded") {
-    return `Storage is full. Free up space or upgrade at ${PRICING_URL}`;
+    return `存储空间已满。请删除一些图片，或前往 ${PRICING_URL} 升级。`;
   }
-  if (status === 413) return `Image is larger than your plan allows.${detail ? ` ${detail}` : ""}`;
+  if (status === 413) return `图片超过当前套餐的大小限制。${detail ? ` ${detail}` : ""}`;
   if ((status === 400 || status === 415) &&
       ["invalid_file_type", "unsupported_file_type", "unsupported_product"].includes(String(parsed.code))) {
-    return "This file type is not supported.";
+    return "不支持这种文件类型。";
   }
-  if (status === 429) return "Too many requests. Try again in a moment.";
-  return detail || fallback || `Upload failed (HTTP ${status}).`;
+  if (status === 429) return "请求太频繁，请稍后再试。";
+  return detail || fallback || `上传失败（HTTP ${status}）。`;
 }
 
 export function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Upload failed. Try again.";
+  return error instanceof Error ? error.message : "上传失败，请重试。";
 }

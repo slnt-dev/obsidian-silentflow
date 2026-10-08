@@ -101,23 +101,23 @@ describe("API against a local HTTP server", () => {
     expect(receivedPath).toBe("/v1/usage");
   });
   it("maps server 401 upload responses", async () => {
-    await expect(upload("sk_wrong_fake")).rejects.toThrow("API key is invalid or revoked. Check it in the plugin settings.");
+    await expect(upload("sk_wrong_fake")).rejects.toThrow("API 密钥无效或已被撤销。请在插件设置里检查。");
   });
   it("maps server 403 storage quota responses", async () => {
     failure = 403;
-    await expect(upload()).rejects.toThrow("Storage is full. Free up space or upgrade at https://slnt.dev/#pricing");
+    await expect(upload()).rejects.toThrow("存储空间已满。请删除一些图片，或前往 https://slnt.dev/#pricing 升级。");
   });
   it("maps server 413 responses including detail", async () => {
     failure = 413;
-    await expect(upload()).rejects.toThrow("Image is larger than your plan allows. File size must be between 1 byte and 2097152 bytes.");
+    await expect(upload()).rejects.toThrow("图片超过当前套餐的大小限制。 File size must be between 1 byte and 2097152 bytes.");
   });
   it("maps server errors on usage too", async () => {
     failure = 401;
-    await expect(api.checkUsage({ baseUrl, apiKey: "sk_test_fake" })).rejects.toThrow("API key is invalid or revoked.");
+    await expect(api.checkUsage({ baseUrl, apiKey: "sk_test_fake" })).rejects.toThrow("API 密钥无效或已被撤销。");
   });
   it("rejects an insecure remote URL returned by a successful upload", async () => {
     invalidUrl = true;
-    await expect(upload()).rejects.toThrow("valid HTTPS image URL");
+    await expect(upload()).rejects.toThrow("没有返回有效的 HTTPS 图片地址");
   });
 });
 
@@ -127,25 +127,25 @@ describe("API validation and transport failures", () => {
   it("does not request invalid addresses or missing credentials", async () => {
     const request = vi.fn<RequestFn>();
     const api = new SilentFlowApi(request);
-    await expect(api.upload({ ...config, baseUrl: "http://remote.example.com" }, "x", "image/png", data)).rejects.toThrow("HTTPS");
-    await expect(api.checkUsage({ ...config, apiKey: "" })).rejects.toThrow("Add your API key");
+    await expect(api.upload({ ...config, baseUrl: "http://remote.example.com" }, "x", "image/png", data)).rejects.toThrow("请使用 HTTPS");
+    await expect(api.checkUsage({ ...config, apiKey: "" })).rejects.toThrow("请先在插件设置里填入 API 密钥。");
     expect(request).not.toHaveBeenCalled();
   });
   it("hides transport exception text and returns the network explanation", async () => {
     const api = new SilentFlowApi(async () => { throw new Error("Transport included fake request headers"); });
-    await expect(api.checkUsage(config)).rejects.toThrow("Could not reach SilentFlow. Check your network connection.");
+    await expect(api.checkUsage(config)).rejects.toThrow("连不上 SilentFlow。请检查网络。");
   });
   it("handles invalid JSON and missing upload URLs", async () => {
     const api = new SilentFlowApi(async () => ({ status: 200, text: "bad json" }));
-    await expect(api.checkUsage(config)).rejects.toThrow("invalid JSON response");
+    await expect(api.checkUsage(config)).rejects.toThrow("返回的数据无法识别");
     const missingUrl = new SilentFlowApi(async () => ({ status: 200, text: "{}" }));
-    await expect(missingUrl.upload(config, "x", "image/png", data)).rejects.toThrow("valid HTTPS image URL");
+    await expect(missingUrl.upload(config, "x", "image/png", data)).rejects.toThrow("没有返回有效的 HTTPS 图片地址");
   });
   it("accepts null limits and rejects malformed usage", async () => {
     const valid = { storage: { used: 0, limit: null, percent: 0 }, traffic: { used: 0, limit: null, reset_date: "Tomorrow" } };
     const api = new SilentFlowApi(async () => ({ status: 200, text: JSON.stringify(valid) }));
     expect(await api.checkUsage(config)).toEqual(valid);
     const malformed = new SilentFlowApi(async () => ({ status: 200, text: "{}" }));
-    await expect(malformed.checkUsage(config)).rejects.toThrow("invalid usage data");
+    await expect(malformed.checkUsage(config)).rejects.toThrow("返回的用量数据无效");
   });
 });

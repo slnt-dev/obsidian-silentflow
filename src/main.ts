@@ -28,7 +28,7 @@ export default class SilentFlowPlugin extends Plugin {
     }));
     this.addCommand({
       id: "check-usage",
-      name: "Check usage",
+      name: "查看用量",
       callback: async () => {
         try {
           new Notice(`SilentFlow\n${formatUsage(await this.api.checkUsage(this.settings))}`, 10000);
@@ -52,7 +52,7 @@ export default class SilentFlowPlugin extends Plugin {
     if (!this.settings.apiKey.trim()) {
       if (pasted && !this.missingKeyNotified) {
         this.missingKeyNotified = true;
-        new Notice("SilentFlow: add your API key in settings to upload pasted images.");
+        new Notice("SilentFlow：请先在插件设置里填入 API 密钥，粘贴的图片才会上传。");
       }
       return;
     }

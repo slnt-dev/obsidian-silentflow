@@ -29,10 +29,10 @@ export class SilentFlowSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     const keyDescription = document.createDocumentFragment();
-    keyDescription.createEl("span", { text: "Your SilentFlow API key. " });
-    keyDescription.createEl("a", { text: "Get a free key", href: "https://slnt.dev/free" });
+    keyDescription.createEl("span", { text: "你的 SilentFlow API 密钥。" });
+    keyDescription.createEl("a", { text: "免费领取", href: "https://slnt.dev/free" });
     new Setting(containerEl)
-      .setName("API key")
+      .setName("API 密钥")
       .setDesc(keyDescription)
       .addText((text) => {
         text.inputEl.type = "password";
@@ -44,31 +44,31 @@ export class SilentFlowSettingTab extends PluginSettingTab {
           });
       });
     new Setting(containerEl)
-      .setName("Upload on paste")
-      .setDesc("Upload image files pasted into the editor.")
+      .setName("粘贴时上传")
+      .setDesc("把粘贴进笔记的图片上传到 SilentFlow。")
       .addToggle((toggle) => toggle.setValue(this.plugin.settings.uploadOnPaste).onChange(async (value) => {
         this.plugin.settings.uploadOnPaste = value;
         await this.plugin.saveSettings();
       }));
     new Setting(containerEl)
-      .setName("Upload on drop")
-      .setDesc("Upload image files dropped into the editor.")
+      .setName("拖入时上传")
+      .setDesc("把拖进笔记的图片上传到 SilentFlow。")
       .addToggle((toggle) => toggle.setValue(this.plugin.settings.uploadOnDrop).onChange(async (value) => {
         this.plugin.settings.uploadOnDrop = value;
         await this.plugin.saveSettings();
       }));
     new Setting(containerEl)
-      .setName("Use file name as alt text")
-      .setDesc("Use the file name without its extension as image alt text.")
+      .setName("用文件名作为替代文本")
+      .setDesc("用去掉扩展名的文件名作为图片的替代文本。")
       .addToggle((toggle) => toggle.setValue(this.plugin.settings.useFileNameAsAlt).onChange(async (value) => {
         this.plugin.settings.useFileNameAsAlt = value;
         await this.plugin.saveSettings();
       }));
-    new Setting(containerEl).setName("Advanced").setHeading();
+    new Setting(containerEl).setName("高级").setHeading();
     const addressError = containerEl.createDiv({ cls: "silentflow-error" });
     new Setting(containerEl)
-      .setName("API address")
-      .setDesc("Use HTTPS, or HTTP for localhost or 127.0.0.1.")
+      .setName("API 地址")
+      .setDesc("使用 HTTPS；只有 localhost 或 127.0.0.1 可以使用 HTTP。")
       .addText((text) => text.setPlaceholder(DEFAULT_SETTINGS.baseUrl)
         .setValue(this.plugin.settings.baseUrl)
         .onChange(async (value) => {
@@ -82,12 +82,12 @@ export class SilentFlowSettingTab extends PluginSettingTab {
           }
         }));
     new Setting(containerEl)
-      .setName("Check usage")
-      .setDesc("Check your storage and monthly traffic usage.")
-      .addButton((button) => button.setButtonText("Check usage").onClick(async () => {
+      .setName("查看用量")
+      .setDesc("查看存储空间和本月流量。")
+      .addButton((button) => button.setButtonText("查看用量").onClick(async () => {
         button.setDisabled(true);
         usageEl.removeClass("silentflow-error");
-        usageEl.setText("Checking usage…");
+        usageEl.setText("正在查询用量…");
         try {
           usageEl.setText(formatUsage(await this.plugin.api.checkUsage(this.plugin.settings)));
         } catch (error: unknown) {
