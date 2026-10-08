@@ -18,7 +18,7 @@ Upload images pasted or dropped into Obsidian to [SilentFlow](https://slnt.dev) 
 
 This plugin is not yet listed in the community plugin directory.
 
-- **BRAT:** once a GitHub repository with release assets is available, add its repository URL using BRAT's **Add a beta plugin** action. No published repository is provided with this initial local implementation.
+- **BRAT:** add `slnt-dev/obsidian-silentflow` with BRAT's **Add a beta plugin** action.
 - **Manual:** build locally or obtain `main.js`, `manifest.json`, and `styles.css` from a release. Copy those three files into your vault's `.obsidian/plugins/silentflow-image-host/` folder. Reload Obsidian, then enable **SilentFlow Image Host** in Community plugins.
 
 ## Setup

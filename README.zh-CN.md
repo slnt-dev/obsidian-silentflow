@@ -18,7 +18,7 @@
 
 本插件尚未上架社区插件目录。
 
-- **BRAT：** 后续存在带发布附件的 GitHub 仓库时，可在 BRAT 的 **Add a beta plugin** 操作中填写其仓库地址。本次初始本地实现不提供已发布仓库。
+- **BRAT：** 在 BRAT 的 **Add a beta plugin** 中填写 `slnt-dev/obsidian-silentflow`。
 - **手动安装：** 本地构建或从发布附件获取 `main.js`、`manifest.json`、`styles.css`，将这三个文件复制到仓库的 `.obsidian/plugins/silentflow-image-host/` 目录。重新加载 Obsidian，在社区插件中启用 **SilentFlow Image Host**。
 
 ## 配置
