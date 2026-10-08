@@ -16,9 +16,7 @@
 
 ## 安装
 
-本插件尚未上架社区插件目录。
-
-- **BRAT：** 在 BRAT 的 **Add a beta plugin** 中填写 `slnt-dev/obsidian-silentflow`。
+- **社区插件：** 在 Obsidian 打开「设置 → 社区插件 → 浏览」，搜索 **SilentFlow**，安装并启用 **SilentFlow Image Host**。插件页面：[community.obsidian.md/plugins/silentflow-image-host](https://community.obsidian.md/plugins/silentflow-image-host)。
 - **手动安装：** 本地构建或从发布附件获取 `main.js`、`manifest.json`、`styles.css`，将这三个文件复制到仓库的 `.obsidian/plugins/silentflow-image-host/` 目录。重新加载 Obsidian，在社区插件中启用 **SilentFlow Image Host**。
 
 ## 配置
