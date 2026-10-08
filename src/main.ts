@@ -72,10 +72,12 @@ export default class SilentFlowPlugin extends Plugin {
       const placeholder = createPlaceholder();
       const filename = uploadFilename(file.name, file.type);
       const alt = imageAlt(filename, this.settings.useFileNameAsAlt, pasted);
-      const text = separated ? `\n${placeholder}` : placeholder;
+      let text = separated ? `\n${placeholder}` : placeholder;
       if (dropAt === null) {
         editor.replaceSelection(text);
       } else {
+        // A drop that lands at the end of a line must not glue onto the next line.
+        if (editor.getValue()[dropAt] === "\n") text += "\n";
         editor.replaceRange(text, editor.offsetToPos(dropAt));
         dropAt += text.length;
       }
