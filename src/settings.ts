@@ -12,6 +12,8 @@ export interface SilentFlowSettings {
   useFileNameAsAlt: boolean;
 }
 
+export const FREE_KEY_URL = "https://slnt.dev/free?utm_source=obsidian_plugin&utm_medium=settings";
+
 export const DEFAULT_SETTINGS: SilentFlowSettings = {
   apiKey: "",
   baseUrl: "https://slnt.dev",
@@ -30,7 +32,11 @@ export class SilentFlowSettingTab extends PluginSettingTab {
     containerEl.empty();
     new Setting(containerEl)
       .setName("API 密钥")
-      .setDesc("你的 SilentFlow API 密钥。可以在 https://slnt.dev/free 免费领取。")
+      .setDesc(createFragment((fragment) => {
+        fragment.appendText("你的 SilentFlow API 密钥。还没有的话，");
+        fragment.createEl("a", { text: "免费领取", href: FREE_KEY_URL });
+        fragment.appendText("，密钥会发到你的邮箱。");
+      }))
       .addText((text) => {
         text.inputEl.type = "password";
         text.setPlaceholder("sk_… or sf_agent_…")
