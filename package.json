@@ -1,6 +1,6 @@
 {
   "name": "silentflow-image-host",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Upload pasted or dropped images to SilentFlow and insert public image links.",
   "main": "main.js",
   "private": true,

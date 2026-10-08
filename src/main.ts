@@ -21,10 +21,12 @@ export default class SilentFlowPlugin extends Plugin {
     this.settings = { ...DEFAULT_SETTINGS, ...await this.loadData() };
     this.addSettingTab(new SilentFlowSettingTab(this.app, this));
     this.registerEvent(this.app.workspace.on("editor-paste", (evt, editor) => {
-      if (this.settings.uploadOnPaste) this.handleImages(evt, editor, true);
+      if (evt.defaultPrevented || !this.settings.uploadOnPaste) return;
+      this.handleImages(evt, editor, true);
     }));
     this.registerEvent(this.app.workspace.on("editor-drop", (evt, editor) => {
-      if (this.settings.uploadOnDrop) this.handleImages(evt, editor, false);
+      if (evt.defaultPrevented || !this.settings.uploadOnDrop) return;
+      this.handleImages(evt, editor, false);
     }));
     this.addCommand({
       id: "check-usage",

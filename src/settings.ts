@@ -28,12 +28,9 @@ export class SilentFlowSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    const keyDescription = document.createDocumentFragment();
-    keyDescription.createEl("span", { text: "你的 SilentFlow API 密钥。" });
-    keyDescription.createEl("a", { text: "免费领取", href: "https://slnt.dev/free" });
     new Setting(containerEl)
       .setName("API 密钥")
-      .setDesc(keyDescription)
+      .setDesc("你的 SilentFlow API 密钥。可以在 https://slnt.dev/free 免费领取。")
       .addText((text) => {
         text.inputEl.type = "password";
         text.setPlaceholder("sk_… or sf_agent_…")

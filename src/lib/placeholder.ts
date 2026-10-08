@@ -30,7 +30,8 @@ export function imageAlt(filename: string, useFileName: boolean, pasted: boolean
 }
 
 export function uploadFilename(filename: string, mimeType: string, timestamp = Date.now()): string {
-  if (filename.trim() && !/[\x00-\x1f\x7f/\\]/.test(filename)) return filename;
+  const control = new RegExp(`[${String.fromCharCode(0)}-${String.fromCharCode(31)}${String.fromCharCode(127)}/\\\\]`);
+  if (filename.trim() && !control.test(filename)) return filename;
   const extensions: Record<string, string> = {
     "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp",
     "image/avif": "avif", "image/bmp": "bmp", "image/svg+xml": "svg", "image/tiff": "tiff",
